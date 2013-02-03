@@ -408,7 +408,7 @@
 	#define MSG_M115_REPORT "FIRMWARE_NAME:Marlin V1; Sprinter/grbl mashup for gen6 FIRMWARE_URL:http://www.mendel-parts.com PROTOCOL_VERSION:1.0 MACHINE_TYPE:Mendel EXTRUDER_COUNT:1\n"
 	#define MSG_COUNT_X " Count X:"
 	#define MSG_ERR_KILLED "Printer gestopt. kill() aangeroepen !!"
-	#define MSG_ERR_STOPPED "Printer gestopt ten gevolge van fouten. Herstel de four en gebruik M999 voor herstart!. (Temperatuur is gereset. Stel in voor herstart)"
+	#define MSG_ERR_STOPPED "Printer gestopt ten gevolge van fouten. Herstel de fout en gebruik M999 voor herstart!. (Temperatuur is gereset. Stel in voor herstart)"
 	#define MSG_RESEND "Opnieuw versturen:"
 	#define MSG_UNKNOWN_COMMAND "Onbekend commando:\""
 	#define MSG_ACTIVE_EXTRUDER "Actieve extruder: "
