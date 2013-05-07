@@ -216,7 +216,6 @@ const int sensitive_pins[] = SENSITIVE_PINS; // Sensitive pin list for M42
 static unsigned long previous_millis_cmd = 0;
 static unsigned long max_inactive_time = 0;
 static unsigned long stepper_inactive_time = DEFAULT_STEPPER_DEACTIVE_TIME*1000l;
-static unsigned long inactivity_time = 0;
 
 static unsigned long starttime=0;
 static unsigned long stoptime=0;
@@ -1795,14 +1794,8 @@ void controllerFan()
 }
 #endif
 
-// This is called in a tight loop.  No need for that; once every five seconds should do - AB
-
 void manage_inactivity(byte debug) 
 { 
-  if((long)(inactivity_time - millis()) > 0)
-    return;
-  inactivity_time += 5000ul;
- 
   if( (millis() - previous_millis_cmd) >  max_inactive_time ) 
     if(max_inactive_time) 
       Stop(); 
