@@ -311,11 +311,16 @@ inline void EEPROM_RetrieveSettings(bool def=false)
       float tmp1[]=DEFAULT_AXIS_STEPS_PER_UNIT;
       float tmp2[]=DEFAULT_MAX_FEEDRATE;
       long tmp3[]=DEFAULT_MAX_ACCELERATION;
+      float tmp4[]=AXES_MAX_LENGTHS;
       for (short i=0;i<4;i++) 
       {
         axis_steps_per_unit[i]=tmp1[i];  
         max_feedrate[i]=tmp2[i];  
         max_acceleration_units_per_sq_second[i]=tmp3[i];
+      }
+      for (int i = 0; i < 3; i++) {
+        add_homeing[i] = 0;
+        max_length[i] = tmp4[i];
       }
       acceleration=DEFAULT_ACCELERATION;
       retract_acceleration=DEFAULT_RETRACT_ACCELERATION;
@@ -325,6 +330,22 @@ inline void EEPROM_RetrieveSettings(bool def=false)
       max_xy_jerk=DEFAULT_XYJERK;
       max_z_jerk=DEFAULT_ZJERK;
       max_e_jerk=DEFAULT_EJERK;
+      for (int i = 0; i < EXTRUDERS; i++) {
+        extruder_x_off[i] = X_EXTRUDER_OFFSET;
+        extruder_y_off[i] = Y_EXTRUDER_OFFSET;
+        extruder_z_off[i] = Z_EXTRUDER_OFFSET;
+        extruder_standby[i] = STANDBY_TEMP;
+        extruder_temperature[i] = DEFAULT_TEMP;
+        setExtruderThermistor(i, E_BETA, E_RS, E_R_INF);
+        setPIDValues(i + 1, DEFAULT_Kp, DEFAULT_Ki, DEFAULT_Kd, PID_INTEGRAL_DRIVE_MAX);
+      }
+      setBedThermistor(BED_BETA, BED_RS, BED_R_INF);
+      #ifdef ADVANCE
+      advance_k=EXTRUDER_ADVANCE_K;
+      #endif
+      #ifdef UMFPUSUPPORT
+      FPUEnabled = false;
+      #endif
       SERIAL_ECHO_START;
       SERIAL_ECHOLN("Using Default settings:");
     }
