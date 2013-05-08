@@ -46,7 +46,7 @@ float Probe_Bed(float x_pos, float y_pos, int n)
 
 			//fast probe 
 			//plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]); 
-			destination[Z_AXIS] = 1.1 * Z_MAX_LENGTH * Z_HOME_DIR; 
+			destination[Z_AXIS] = 1.1 * max_length[Z_AXIS] * Z_HOME_DIR; 
 			feedrate = homing_feedrate[Z_AXIS]; 
 			plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], feedrate/60, active_extruder); 
 			st_synchronize();
@@ -138,8 +138,8 @@ void probe_3points()
 {
     float Probe_Avg, Point1, Point2, Point3;
     Point1 = Probe_Bed(15,15,PROBE_N);
-    Point2 = Probe_Bed(X_MAX_LENGTH - 20,15,PROBE_N) ;
-    Point3 = Probe_Bed(X_MAX_LENGTH/2,Y_MAX_LENGTH - 5,PROBE_N);
+    Point2 = Probe_Bed(max_length[X_AXIS] - 20,15,PROBE_N) ;
+    Point3 = Probe_Bed(max_length[X_AXIS]/2,max_length[Y_AXIS] - 5,PROBE_N);
     Probe_Avg = (Point1 + Point2 + Point3) / 3;
     //destination[2] = Probe_Avg;
     //feedrate = homing_feedrate[Z_AXIS];

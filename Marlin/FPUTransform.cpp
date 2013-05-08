@@ -153,16 +153,16 @@ void FPUDisable()
 void FPUTransform_determineBedOrientation()
 {
 int X3 = 15;
-float X4 = X_MAX_LENGTH - 20; 
+float X4 = max_length[X_AXIS] - 20; 
 float X2 = (X4 + X3) / 2;
 int Y1 = 15;
-float Y2 = Y_MAX_LENGTH - 5;  
+float Y2 = max_length[Y_AXIS] - 5;  
 float Z1;
 float Z2; 
 float Z3;
 float Z4;
 
-//get Z for X15 Y15, X15 Y(Y_MAX_LENGTH - 15) and X(X_MAX_LENGTH - 15) Y15
+//get Z for X15 Y15, X15 Y(max_length[Y_AXIS] - 15) and X(max_length[X_AXIS] - 15) Y15
 Z3 = Probe_Bed(X3,Y1,PROBE_N);
 Z4 = Probe_Bed(X4,Y1,PROBE_N);
 Z1 = (Z3 + Z4) / 2;
