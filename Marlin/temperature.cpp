@@ -61,6 +61,9 @@ float bBeta, bRs, bRInf;
   
 #endif //PIDTEMP
   
+#ifdef FAN_SOFT_PWM
+unsigned char FanSpeedSoftPwm;
+#endif
   
 //===========================================================================
 //=============================private variables============================
@@ -86,6 +89,9 @@ static unsigned long  previous_millis_bed_heater;
   static bool pid_reset[EXTRUDERS_T];
 #endif //PIDTEMP
   static unsigned char soft_pwm[EXTRUDERS_T];
+#ifdef FAN_SOFT_PWM
+  static unsigned char soft_pwm_fan;
+#endif
 
 
 // Init min and max temp with extreme values to prevent false errors during startup
@@ -93,8 +99,14 @@ static unsigned long  previous_millis_bed_heater;
 //  static int maxttemp[EXTRUDERS_T] = { 16383 }; // the first value used for all
   static int bed_minttemp = 0;
   static int bed_maxttemp = 16383;
-  
 
+#ifndef SOFT_PWM_SCALE
+#define SOFT_PWM_SCALE 0
+#endif
+#ifndef FAN_SOFT_PWM_SCALE
+#define FAN_SOFT_PWM_SCALE 0
+#endif
+  
 //===========================================================================
 //=============================   functions      ============================
 //===========================================================================
@@ -546,6 +558,9 @@ void tp_init()
   #endif  
   #if (FAN_PIN > -1) 
     SET_OUTPUT(FAN_PIN);
+    #ifdef FAN_SOFT_PWM
+    soft_pwm_fan = FanSpeedSoftPwm / 2;
+    #endif
   #endif  
 
 
@@ -703,10 +718,11 @@ ISR(TIMER0_COMPB_vect)
   static unsigned long raw_temp_2_value = 0;
   static unsigned long raw_temp_bed_value = 0;
   static unsigned char temp_state = 0;
-  static unsigned char pwm_count = 1;
+  static unsigned char pwm_count = (1 << SOFT_PWM_SCALE);
   static unsigned char soft_pwm_0;
   static unsigned char soft_pwm_1;
   static unsigned char soft_pwm_2;
+  static unsigned char fan_pwm_count = (1 << FAN_SOFT_PWM_SCALE);
   
   if(pwm_count == 0){
     soft_pwm_0 = soft_pwm[0];
@@ -735,8 +751,18 @@ ISR(TIMER0_COMPB_vect)
   if(soft_pwm_2 <= pwm_count) WRITE(HEATER_2_PIN,0);
   #endif
   #endif
-  pwm_count++;
+  pwm_count += (1 << SOFT_PWM_SCALE);
   pwm_count &= 0x7f;
+  
+  #ifdef FAN_SOFT_PWM
+  if (fan_pwm_count == 0) {
+    soft_pwm_fan = FanSpeedSoftPwm / 2;
+    if (soft_pwm_fan > 0) WRITE(FAN_PIN, 1);
+  }
+  if (soft_pwm_fan <= fan_pwm_count) WRITE(FAN_PIN, 0);
+  fan_pwm_count += (1 << FAN_SOFT_PWM_SCALE);
+  fan_pwm_count &= 0x7F;
+  #endif
   
   switch(temp_state) {
     case 0: // Prepare TEMP_0

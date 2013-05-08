@@ -217,6 +217,9 @@ extern int saved_feedmultiply;
 extern float current_position[NUM_AXIS] ;
 extern float add_homeing[3];
 extern unsigned char FanSpeed;
+#ifdef FAN_SOFT_PWM
+extern unsigned char FanSpeedSoftPwm;
+#endif
 
 extern float destination[NUM_AXIS];
 extern float modified_destination[NUM_AXIS];

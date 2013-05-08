@@ -26,6 +26,25 @@
 //#define CONTROLLERFAN_PIN 23 //Pin used for the fan to cool controller, comment out to disable this function
 #define CONTROLLERFAN_SEC 60 //How many seconds, after all motors were disabled, the fan should run
 
+// When first starting the main fan, run it at full speed for the
+// given number of milliseconds.  This gets the fan spinning reliably
+// before setting a PWM value.
+//#define FAN_KICKSTART_TIME 100
+
+// Use software PWM to drive the fan, as for the heaters. This uses a very low frequency
+// which is not as annoying as with the hardware PWM. If enabled, the frequency can then
+// be adjusted using FAN_SOFT_PWM_SCALE.
+#define FAN_SOFT_PWM
+
+// If FAN_SOFT_PWM is set, incrementing this by 1 will double the PWM frequency
+// for the fan. However, control resolution will be halved for each increment;
+// at FAN_SOFT_PWM_SCALE=0, there are 128 effective control positions.
+#define FAN_SOFT_PWM_SCALE 2
+
+// Incrementing this by 1 will double the PWM frequency for heaters.
+// A high frequency could destroy your mosfets.
+#define SOFT_PWM_SCALE 0
+
 //===========================================================================
 //=============================Mechanical Settings===========================
 //===========================================================================
