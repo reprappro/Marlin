@@ -9,7 +9,7 @@
 
 // Uncomment ONE of the next three lines - the one for your RepRap machine
 //#define REPRAPPRO_HUXLEY
-//#define REPRAPPRO_MENDEL //Legacy Mendel
+#define REPRAPPRO_MENDEL //Legacy Mendel
 //#define REPRAPPRO_MENDEL2 //Tricolour and Mono
 
 // Uncomment ONE of the next two lines - the one for your master controller electronics
@@ -17,8 +17,8 @@
 //#define REPRAPPRO_SANGUINOLOLU
 
 // Uncomment ONE of the next two lines - the one for the series resistors on your controller
-#define SERIAL_R 4700
-//#define SERIAL_R 10000
+//#define SERIAL_R 4700
+#define SERIAL_R 10000
 
 // Uncomment the next line if your machine has more than one extruder
 //#define REPRAPPRO_MULTIMATERIALS
@@ -224,8 +224,8 @@ const bool Z_ENDSTOPS_INVERTING = false; // set to true to invert the logic of t
 
 #ifdef REPRAPPRO_MENDEL
 #define AXES_MAX_LENGTHS {210, 210, 140}
-#define INVERT_X_DIR false    // for Mendel set to false, for Orca set to true
-#define INVERT_Y_DIR true    // for Mendel set to true, for Orca set to false
+#define INVERT_X_DIR true    // for Mendel set to false, for Orca set to true
+#define INVERT_Y_DIR false    // for Mendel set to true, for Orca set to false
 #define INVERT_Z_DIR false     // for Mendel set to false, for Orca set to true
 #define INVERT_E0_DIR true   // for direct drive extruder v9 set to true, for geared extruder set to false
 #define INVERT_E1_DIR true    // for direct drive extruder v9 set to true, for geared extruder set to false
@@ -277,7 +277,6 @@ const bool Z_ENDSTOPS_INVERTING = false; // set to true to invert the logic of t
 #define Z_MAX_LENGTH 110
 #define HOMING_FEEDRATE {10*60, 10*60, 1*60, 0}  // set the homing speeds (mm/min)
 #define FAST_HOME_FEEDRATE {50*60, 50*60, 1*60, 0}  // set the homing speeds (mm/min)
-#define DEFAULT_MAX_FEEDRATE  {500, 500, 3, 45}
 #define DEFAULT_MAX_FEEDRATE          {300, 300, 3, 45}    // (mm/sec)    
 #define DEFAULT_MAX_ACCELERATION      {800,800,30,250}    // X, Y, Z, E maximum start speed for accelerated moves. E default values
 
@@ -290,7 +289,6 @@ const bool Z_ENDSTOPS_INVERTING = false; // set to true to invert the logic of t
 #define Z_MAX_LENGTH 110
 #define HOMING_FEEDRATE {10*60, 10*60, 1*60, 0}  // set the homing speeds (mm/min)
 #define FAST_HOME_FEEDRATE {50*60, 50*60, 1*60, 0}  // set the homing speeds (mm/min)
-#define DEFAULT_MAX_FEEDRATE  {500, 500, 3, 45}
 #define DEFAULT_MAX_FEEDRATE          {300, 300, 3, 45}    // (mm/sec)    
 #define DEFAULT_MAX_ACCELERATION      {800,800,30,250}    // X, Y, Z, E maximum start speed for accelerated moves. E default values
 
@@ -311,7 +309,11 @@ const bool Z_ENDSTOPS_INVERTING = false; // set to true to invert the logic of t
 
 // default settings 
 // X, Y, Z, E steps per mm
-#define DEFAULT_AXIS_STEPS_PER_UNIT   {92.635, 92.635, 4000, 660} 
+#ifdef REPRAPPRO_MENDEL
+#define DEFAULT_AXIS_STEPS_PER_UNIT {92.635, 92.635, 4000, 875}
+#else
+#define DEFAULT_AXIS_STEPS_PER_UNIT   {92.635, 92.635, 4000, 660}
+#endif
 
 // Defaults changed by the G10 command
 
