@@ -6,7 +6,8 @@
 // 2  English 
 // 3  French	(Waiting translation)
 // 4  German	(Waiting translation)
-// 5  Etc
+// 5  Dutch    (Nederlands)
+// 6  Etc
 
 #define LANGUAGE_CHOICE 1  // Pick your language from the list above
 
