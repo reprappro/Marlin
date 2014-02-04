@@ -199,7 +199,7 @@
 //can be software-disabled for whatever purposes by
  #define PREVENT_DANGEROUS_EXTRUDE
  #define EXTRUDE_MINTEMP 170
- #define EXTRUDE_MAXLENGTH (X_MAX_LENGTH+Y_MAX_LENGTH) //prevent extrusion of very large distances.
+ #define EXTRUDE_MAXLENGTH 400 //prevent extrusion of very large distances.
 #else
  #define BOGUS_TEMPERATURE_FAILSAFE_OVERRIDE
 #endif
@@ -236,6 +236,10 @@ const bool Z_ENDSTOPS_INVERTING = false; // set to true to invert the logic of t
 #define INVERT_E0_DIR true   // for direct drive extruder v9 set to true, for geared extruder set to false
 #define INVERT_E1_DIR true    // for direct drive extruder v9 set to true, for geared extruder set to false
 #define INVERT_E2_DIR true   // for direct drive extruder v9 set to true, for geared extruder set to false
+#define HOMING_FEEDRATE {10*60, 10*60, 1*60, 0}  // set the homing speeds (mm/min)
+#define FAST_HOME_FEEDRATE {50*60, 50*60, 1*60, 0}  // set the homing speeds (mm/min)
+#define DEFAULT_MAX_FEEDRATE          {300, 300, 3, 45}    // (mm/sec)    
+#define DEFAULT_MAX_ACCELERATION      {800,800,30,250}    // X, Y, Z, E maximum start speed for accelerated moves. E default values
 #endif
 
 #ifdef REPRAPPRO_MENDEL2
@@ -246,6 +250,10 @@ const bool Z_ENDSTOPS_INVERTING = false; // set to true to invert the logic of t
 #define INVERT_E0_DIR true   // for direct drive extruder v9 set to true, for geared extruder set to false
 #define INVERT_E1_DIR true    // for direct drive extruder v9 set to true, for geared extruder set to false
 #define INVERT_E2_DIR true   // for direct drive extruder v9 set to true, for geared extruder set to false
+#define HOMING_FEEDRATE {10*60, 10*60, 1*60, 0}  // set the homing speeds (mm/min)
+#define FAST_HOME_FEEDRATE {50*60, 50*60, 1*60, 0}  // set the homing speeds (mm/min)
+#define DEFAULT_MAX_FEEDRATE          {300, 300, 3, 45}    // (mm/sec)    
+#define DEFAULT_MAX_ACCELERATION      {800,800,30,250}    // X, Y, Z, E maximum start speed for accelerated moves. E default values
 #endif
 
 #ifdef REPRAPPRO_HUXLEY
@@ -256,6 +264,10 @@ const bool Z_ENDSTOPS_INVERTING = false; // set to true to invert the logic of t
 #define INVERT_E0_DIR true   // for direct drive extruder v9 set to true, for geared extruder set to false
 #define INVERT_E1_DIR true    // for direct drive extruder v9 set to true, for geared extruder set to false
 #define INVERT_E2_DIR true   // for direct drive extruder v9 set to true, for geared extruder set to false
+#define HOMING_FEEDRATE {10*60, 10*60, 1*60, 0}  // set the homing speeds (mm/min)
+#define FAST_HOME_FEEDRATE {80*60, 80*60, 4*60, 0}  // set the homing speeds (mm/min)
+#define DEFAULT_MAX_FEEDRATE          {500, 500, 5, 45}    // (mm/sec)    
+#define DEFAULT_MAX_ACCELERATION      {1000,1000,50,250}    // X, Y, Z, E maximum start speed for accelerated moves. E default values
 #endif
 
 
@@ -275,45 +287,6 @@ const bool Z_ENDSTOPS_INVERTING = false; // set to true to invert the logic of t
 
 //// MOVEMENT SETTINGS
 #define NUM_AXIS 4 // The axis order in all axis related arrays is X, Y, Z, E
-
-#ifdef REPRAPPRO_MENDEL
-
-#define X_MAX_LENGTH 210  
-#define Y_MAX_LENGTH 210
-#define Z_MAX_LENGTH 110
-#define HOMING_FEEDRATE {10*60, 10*60, 1*60, 0}  // set the homing speeds (mm/min)
-#define FAST_HOME_FEEDRATE {50*60, 50*60, 1*60, 0}  // set the homing speeds (mm/min)
-#define DEFAULT_MAX_FEEDRATE  {500, 500, 3, 45}
-#define DEFAULT_MAX_FEEDRATE          {300, 300, 3, 45}    // (mm/sec)    
-#define DEFAULT_MAX_ACCELERATION      {800,800,30,250}    // X, Y, Z, E maximum start speed for accelerated moves. E default values
-
-#else
-
-#ifdef REPRAPPRO_MENDEL2
-
-#define X_MAX_LENGTH 210  
-#define Y_MAX_LENGTH 210
-#define Z_MAX_LENGTH 110
-#define HOMING_FEEDRATE {10*60, 10*60, 1*60, 0}  // set the homing speeds (mm/min)
-#define FAST_HOME_FEEDRATE {50*60, 50*60, 1*60, 0}  // set the homing speeds (mm/min)
-#define DEFAULT_MAX_FEEDRATE  {500, 500, 3, 45}
-#define DEFAULT_MAX_FEEDRATE          {300, 300, 3, 45}    // (mm/sec)    
-#define DEFAULT_MAX_ACCELERATION      {800,800,30,250}    // X, Y, Z, E maximum start speed for accelerated moves. E default values
-
-#else
-
-#define X_MAX_LENGTH 155
-#define Y_MAX_LENGTH 150
-#define Z_MAX_LENGTH 90
-#define HOMING_FEEDRATE {10*60, 10*60, 1*60, 0}  // set the homing speeds (mm/min)
-#define FAST_HOME_FEEDRATE {80*60, 80*60, 4*60, 0}  // set the homing speeds (mm/min)
-#define DEFAULT_MAX_FEEDRATE  {500, 500, 5, 45}    // (mm/sec)
-#define DEFAULT_MAX_FEEDRATE          {500, 500, 5, 45}    // (mm/sec)    
-#define DEFAULT_MAX_ACCELERATION      {1000,1000,50,250}    // X, Y, Z, E maximum start speed for accelerated moves. E default values
-
-#endif
-#endif
-
 
 // default settings 
 // X, Y, Z, E steps per mm

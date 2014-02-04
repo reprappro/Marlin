@@ -7,7 +7,6 @@
 #include "FPUTransform.h"
 //#include <EEPROM.h>
 
-extern float max_length[];
 extern float extruder_x_off[];
 extern float extruder_y_off[];
 extern float extruder_z_off[];
