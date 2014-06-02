@@ -10,18 +10,16 @@
 // Uncomment ONE of the next three lines - the one for your RepRap machine
 //#define REPRAPPRO_HUXLEY
 //#define REPRAPPRO_MENDEL //Legacy Mendel
-//#define REPRAPPRO_MENDEL2 //Tricolour and Mono
+//#define REPRAPPRO_MENDEL2 // Mono Mendel
 
 // Uncomment ONE of the next two lines - the one for your master controller electronics
-#define REPRAPPRO_MELZI
+//#define REPRAPPRO_MELZI
 //#define REPRAPPRO_SANGUINOLOLU
 
 // Uncomment ONE of the next two lines - the one for the series resistors on your controller
-#define SERIAL_R 4700
+//#define SERIAL_R 4700
 //#define SERIAL_R 10000
 
-// Uncomment the next line if your machine has more than one extruder
-//#define REPRAPPRO_MULTIMATERIALS
 
 // -------------------------------------------------------------------------------
 
@@ -56,8 +54,8 @@
 //User specified version info of THIS file to display in [Pronterface, etc] terminal window during startup.
 //Implementation of an idea by Prof Braino to inform user that any changes made
 //to THIS file by the user have been successfully uploaded into firmware.
-#define STRING_VERSION_CONFIG_H "2013-05-16-JMG" //Personal revision number for changes to THIS file.
-#define STRING_CONFIG_H_AUTHOR "eMAKER" //Who made the changes.
+#define STRING_VERSION_CONFIG_H "2014-06-02-AB" //Personal revision number for changes to THIS file.
+#define STRING_CONFIG_H_AUTHOR "RRP" //Who made the changes.
 
 // This determines the communication speed of the printer
 //#define BAUDRATE 250000
@@ -103,37 +101,64 @@
 #define ABS_ZERO -273.15
 #define AD_RANGE 16383
 
-// RS 198-961
-#define E_BETA 3960.0
-#define E_RS SERIAL_R
+
+#ifdef REPRAPPRO_HUXLEY
+
+// Bed thermistor: VISHAY BC COMPONENTS NTCS0603E3104FXT - All Huxleys with heated bed PCB
+#define BED_BETA 4100.0
+#define BED_NTC 100000.0
+
+// Extruder thermistor: RS 198-961 100k ohm 10% DO-35 NTC thermistor - All Huxleys before 25/2/14
+// #define E_BETA 3960.0
+// #define E_NTC 100000.0
+
+// Extruder thermistor: Digikey 480-3137-ND - All Huxleys shipped after 25/2/14
+#define E_BETA 4138.0
 #define E_NTC 100000.0
-#define E_R_INF ( E_NTC*exp(-E_BETA/298.15) )
+
+#endif
 
 
 #ifdef REPRAPPRO_MENDEL
-// Bed thermistor: RS 484-0149; EPCOS B57550G103J
+
+// Extruder thermistor: RS 198-961 100k ohm 10% DO-35 NTC thermistor - All Mendels before 1/4/13
+#define E_BETA 3960.0
+#define E_NTC 100000.0
+
+// Bed thermistor: RS 484-0149; EPCOS B57550G103J - All Mendels before 1/4/13
 #define BED_BETA 3480.0
-#define BED_RS SERIAL_R
 #define BED_NTC 10000.0
-#define BED_R_INF ( BED_NTC*exp(-BED_BETA/298.15) )
 
 #endif
 
-#ifdef REPRAPPRO_HUXLEY
-// VISHAY BC COMPONENTS - NTCS0603E3104FXT
-#define BED_BETA 4100.0
-#define BED_RS SERIAL_R
-#define BED_NTC 100000.0
-#define BED_R_INF ( BED_NTC*exp(-BED_BETA/298.15) )
-#endif
 
 #ifdef REPRAPPRO_MENDEL2
-// Rapid 61-0446 ; Semitec 103GT-2 All Mendels and Thermistors shipped after 1/4/13
- #define BED_BETA 4126.0
- #define BED_RS SERIAL_R
+
+// Bed thermistor: Rapid 61-0446 ; Semitec 103GT-2 - All Mendel2 shipped after 1/4/13 (launch)
+// #define BED_BETA 4126.0
+// #define BED_NTC 10000.0
+
+// Bed thermistor: Farnell 1299930 ; EPCOS B57863S103F040 - All Mendel2 shipped after 29/5/14
+ #define BED_BETA 3988.0
  #define BED_NTC 10000.0
- #define BED_R_INF ( BED_NTC*exp(-BED_BETA/298.15) )
+
+// Extruder thermistor: RS 198-961 100k ohm 10% DO-35 NTC thermistor - All Mendel2 shipped after 1/4/13 (launch)
+// #define E_BETA 3960.0
+// #define E_NTC 100000.0
+
+// Extruder thermistor: Digikey 480-3137-ND - All Mendels shipped after 25/2/14
+#define E_BETA 4138.0
+#define E_NTC 100000.0
+
 #endif
+
+
+#define E_RS SERIAL_R
+#define E_R_INF ( E_NTC*exp(-E_BETA/298.15) )
+
+#define BED_RS SERIAL_R
+#define BED_R_INF ( BED_NTC*exp(-BED_BETA/298.15) )
+
 
 
 #define BED_USES_THERMISTOR
@@ -270,6 +295,19 @@ const bool Z_ENDSTOPS_INVERTING = false; // set to true to invert the logic of t
 //// MOVEMENT SETTINGS
 #define NUM_AXIS 4 // The axis order in all axis related arrays is X, Y, Z, E
 
+/*
+We've shipped a number of different configurations of belt and pulley now, so probably need some ifdef statements! At the moment, they all get the same.
+
+White polyurethane belt (T2.5), 14-tooth printed pulley: 91.4286 step per mm (Original Huxley, Legacy Mendel)
+Black rubber belt (MXL), 17-tooth printed pulley: 92.635 step per mm (Huxley, Mendel Mono and Tri since 1/4/2013)
+Black rubber belt (MXL), 18-tooth aluminium pulley: 87.489 step per mm (Huxley, Mendel Mono and Tri since 1/1/2014)
+
+Also, two different extruders:
+
+Original eMaker/RepRapPro-style: 920 steps per mm (Original Huxley, Legacy Mendel)
+New version (NEMA14 and NEMA17): 660 steps per mm (Huxley, Mendel Mono and Tricolour since 1/4/2013) 
+*/
+
 #ifdef REPRAPPRO_MENDEL
 
 #define X_MAX_LENGTH 210  
@@ -280,6 +318,10 @@ const bool Z_ENDSTOPS_INVERTING = false; // set to true to invert the logic of t
 #define DEFAULT_MAX_FEEDRATE  {500, 500, 3, 45}
 #define DEFAULT_MAX_FEEDRATE          {300, 300, 3, 45}    // (mm/sec)    
 #define DEFAULT_MAX_ACCELERATION      {800,800,30,250}    // X, Y, Z, E maximum start speed for accelerated moves. E default values
+
+// X, Y, Z, E steps per mm
+
+#define DEFAULT_AXIS_STEPS_PER_UNIT    {91.4286, 91.4286, 4000, 920.0} // <- 14 tooth T2.5 belt + original extruder drive
 
 #else
 
@@ -294,6 +336,11 @@ const bool Z_ENDSTOPS_INVERTING = false; // set to true to invert the logic of t
 #define DEFAULT_MAX_FEEDRATE          {300, 300, 3, 45}    // (mm/sec)    
 #define DEFAULT_MAX_ACCELERATION      {800,800,30,250}    // X, Y, Z, E maximum start speed for accelerated moves. E default values
 
+// X, Y, Z, E steps per mm
+
+#define DEFAULT_AXIS_STEPS_PER_UNIT    {87.489, 87.489, 4000, 660.0} // <- 18-tooth aluminium pulley 
+//#define DEFAULT_AXIS_STEPS_PER_UNIT    {92.635, 92.635, 4000, 660}   // <- 17-tooth printed pulley 
+
 #else
 
 #define X_MAX_LENGTH 155
@@ -305,13 +352,17 @@ const bool Z_ENDSTOPS_INVERTING = false; // set to true to invert the logic of t
 #define DEFAULT_MAX_FEEDRATE          {500, 500, 5, 45}    // (mm/sec)    
 #define DEFAULT_MAX_ACCELERATION      {1000,1000,50,250}    // X, Y, Z, E maximum start speed for accelerated moves. E default values
 
-#endif
-#endif
-
-
-// default settings 
 // X, Y, Z, E steps per mm
-#define DEFAULT_AXIS_STEPS_PER_UNIT   {92.635, 92.635, 4000, 660} 
+
+#define DEFAULT_AXIS_STEPS_PER_UNIT    {87.489, 87.489, 4000, 660.0} // <- 18-tooth aluminium pulley 
+//#define DEFAULT_AXIS_STEPS_PER_UNIT    {92.635, 92.635, 4000, 660}   // <- 17-tooth printed pulley 
+//#define DEFAULT_AXIS_STEPS_PER_UNIT    {91.4286, 91.4286, 4000, 920.0}  // <- 14 tooth T2.5 belt + original extruder drive
+
+
+#endif
+#endif
+
+
 
 // Defaults changed by the G10 command
 
