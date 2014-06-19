@@ -241,7 +241,8 @@ inline void EEPROM_RetrieveSettings(bool def=false)
         axis_steps_per_unit[i]=tmp1[i];  
         max_feedrate[i]=tmp2[i];  
         max_acceleration_units_per_sq_second[i]=tmp3[i];
-        max_length[i]=tmp4[i];
+        if(i<sizeof(tmp4)/sizeof(tmp4[0]))
+            max_length[i]=tmp4[i];
       }
       acceleration=DEFAULT_ACCELERATION;
       retract_acceleration=DEFAULT_RETRACT_ACCELERATION;
