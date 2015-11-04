@@ -97,7 +97,7 @@
 
 #define LED_PIN            27
 
-#define FAN_PIN            4 
+#define FAN_PIN            6 
 
 #define PS_ON_PIN          -1
 #define KILL_PIN           -1
@@ -118,7 +118,7 @@
 #define TEMP_0_PIN          7   // MUST USE ANALOG INPUT NUMBERING NOT DIGITAL OUTPUT NUMBERING!!!!!!!!! (pin 33 extruder)
 #define TEMP_1_PIN         -1
 #define TEMP_2_PIN         -1
-#define TEMP_BED_PIN        6   // MUST USE ANALOG INPUT NUMBERING NOT DIGITAL OUTPUT NUMBERING!!!!!!!!! (pin 34 bed)
+#define TEMP_BED_PIN        4   // MUST USE ANALOG INPUT NUMBERING NOT DIGITAL OUTPUT NUMBERING!!!!!!!!! (pin 34 bed)
 #define SDPOWER            -1
 #define SDSS               31
 

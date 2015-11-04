@@ -9,7 +9,7 @@
 
 // Uncomment ONE of the next three lines - the one for your RepRap machine
 //#define REPRAPPRO_HUXLEY
-//#define REPRAPPRO_MENDEL //Legacy Mendel
+#define REPRAPPRO_MENDEL //Legacy Mendel
 //#define REPRAPPRO_MENDEL2 //Tricolour and Mono
 
 // Uncomment ONE of the next two lines - the one for your master controller electronics
@@ -17,8 +17,8 @@
 //#define REPRAPPRO_SANGUINOLOLU
 
 // Uncomment ONE of the next two lines - the one for the series resistors on your controller
-#define SERIAL_R 4700
-//#define SERIAL_R 10000
+//#define SERIAL_R 4700
+#define SERIAL_R 10000
 
 // Uncomment the next line if your machine has more than one extruder
 //#define REPRAPPRO_MULTIMATERIALS
@@ -112,9 +112,9 @@
 
 #ifdef REPRAPPRO_MENDEL
 // Bed thermistor: RS 484-0149; EPCOS B57550G103J
-#define BED_BETA 3480.0
+#define BED_BETA 3960.0
 #define BED_RS SERIAL_R
-#define BED_NTC 10000.0
+#define BED_NTC 100000.0
 #define BED_R_INF ( BED_NTC*exp(-BED_BETA/298.15) )
 
 #endif
