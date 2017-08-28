@@ -356,9 +356,9 @@ const bool Z_ENDSTOPS_INVERTING = false; // set to true to invert the logic of t
 #define ULTRA_LCD  //general lcd support, also 16x2
 #define SDSUPPORT // Enable SD Card Support in Hardware Console
 
-//#define ULTIPANEL
+#define ULTIPANEL
 #ifdef ULTIPANEL
-  //#define NEWPANEL  //enable this if you have a click-encoder panel
+  #define NEWPANEL  //enable this if you have a click-encoder panel
   #define SDSUPPORT
   #define ULTRA_LCD
   #define LCD_WIDTH 20
@@ -375,8 +375,8 @@ const bool Z_ENDSTOPS_INVERTING = false; // set to true to invert the logic of t
 
 #else //no panel but just lcd 
   #ifdef ULTRA_LCD
-    #define LCD_WIDTH 16
-    #define LCD_HEIGHT 2
+    #define LCD_WIDTH 20
+    #define LCD_HEIGHT 4
   #endif
 #endif
 

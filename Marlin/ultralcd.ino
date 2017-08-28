@@ -18,7 +18,7 @@ extern volatile int extrudemultiply;
 
 extern long position[4];   
 #ifdef SDSUPPORT
-#include "cardreader.h"
+#include "Sd.h"
 extern CardReader card;
 #endif
 

@@ -60,6 +60,7 @@
 #define SDPOWER            -1
 #define SDSS               31
 
+#define SLAVE_CLOCK	   16
 
 #endif
 
