@@ -74,6 +74,7 @@ float max_xy_jerk; //speed than can be stopped at once, if i understand correctl
 float max_z_jerk;
 float max_e_jerk;
 float mintravelfeedrate;
+unsigned int coldStrike;
 unsigned long axis_steps_per_sqr_second[NUM_AXIS];
 
 // The current position of the tool in absolute steps
@@ -366,6 +367,7 @@ void plan_init() {
   previous_speed[2] = 0.0;
   previous_speed[3] = 0.0;
   previous_nominal_speed = 0.0;
+  coldStrike = 0;
 }
 
 
@@ -485,10 +487,16 @@ void plan_buffer_line(const float &x, const float &y, const float &z, const floa
     if(target[E_AXIS]!=position[E_AXIS])
     if(degHotend(active_extruder)<EXTRUDE_MINTEMP && !allow_cold_extrude)
     {
-      position[E_AXIS]=target[E_AXIS]; //behave as if the move really took place, but ignore E part
-      SERIAL_ECHO_START;
-      SERIAL_ECHOLNPGM(MSG_ERR_COLD_EXTRUDE_STOP);
-    }
+      coldStrike++;
+      if(coldStrike > 3)
+      {
+        position[E_AXIS]=target[E_AXIS]; //behave as if the move really took place, but ignore E part
+        SERIAL_ECHO_START;
+        SERIAL_ECHOLNPGM(MSG_ERR_COLD_EXTRUDE_STOP);
+      }
+    } else
+      coldStrike = 0;
+      
     if(labs(target[E_AXIS]-position[E_AXIS])>axis_steps_per_unit[E_AXIS]*EXTRUDE_MAXLENGTH)
     {
       position[E_AXIS]=target[E_AXIS]; //behave as if the move really took place, but ignore E part

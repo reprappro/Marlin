@@ -6,11 +6,6 @@
 *
 ****************************************************************************************/
 #if MOTHERBOARD == 62
-#undef MOTHERBOARD
-#define MOTHERBOARD 6
-#define SANGUINOLOLU_V_1_2 
-#endif
-#if MOTHERBOARD == 6
 #define KNOWN_BOARD 1
 #ifndef __AVR_ATmega644P__
 #ifndef __AVR_ATmega1284P__
@@ -39,7 +34,7 @@
 #define PROBE_PIN          20
 
 #define LED_PIN            -1
-#define FAN_PIN            -1
+#define FAN_PIN            12
 
 #define PS_ON_PIN          -1
 #define KILL_PIN           -1
@@ -48,23 +43,15 @@
 #define HEATER_1_PIN       -1
 #define HEATER_2_PIN       -1
 
-#ifdef SANGUINOLOLU_V_1_2
-
-#define HEATER_BED_PIN     10 // (bed) - 10 for spare DIO pin and bed MOSFET, 12 for SL MOSFET
+#ifdef REPRAPPRO_HUXLEY
+  #define HEATER_BED_PIN     10 // bed (change to 10 for gate pin of MOSFET on heated bed)
+#else
+  #define HEATER_BED_PIN     12
+#endif
 #define X_ENABLE_PIN       14
 #define Y_ENABLE_PIN       14
 #define Z_ENABLE_PIN       26
 #define E0_ENABLE_PIN       14
-
-#else
-
-#define HEATER_BED_PIN       14  // (bed)
-#define X_ENABLE_PIN       -1
-#define Y_ENABLE_PIN       -1
-#define Z_ENABLE_PIN       -1
-#define E0_ENABLE_PIN       -1
-
-#endif
 
 #define TEMP_0_PIN          7   // MUST USE ANALOG INPUT NUMBERING NOT DIGITAL OUTPUT NUMBERING!!!!!!!!! (pin 33 extruder)
 #define TEMP_1_PIN         -1
@@ -73,6 +60,7 @@
 #define SDPOWER            -1
 #define SDSS               31
 
+#define SLAVE_CLOCK	   16
 
 #endif
 
@@ -118,8 +106,11 @@
 #define HEATER_0_PIN       13 // (extruder)
 #define HEATER_1_PIN       -1
 #define HEATER_2_PIN       -1
-
-#define HEATER_BED_PIN     12 // bed (change to 10 for gate pin of MOSFET on heated bed)
+#ifdef REPRAPPRO_HUXLEY
+  #define HEATER_BED_PIN     10 // bed (change to 10 for gate pin of MOSFET on heated bed)
+#else
+  #define HEATER_BED_PIN     12
+#endif
 #define X_ENABLE_PIN       14
 #define Y_ENABLE_PIN       14
 #define Z_ENABLE_PIN       26
@@ -135,6 +126,54 @@
 #define SLAVE_CLOCK	   16
 
 #endif
+
+/****************************************************************************************
+* Due pin assignment
+*
+****************************************************************************************/
+#ifdef REPRAPPRO_DUE
+#define KNOWN_BOARD 1
+
+// Pins are the same as RAMPS 1.4, except for combined enables and no max pins
+
+#define X_STEP_PIN         54
+#define X_DIR_PIN          55
+#define X_ENABLE_PIN       38
+#define X_MIN_PIN           3
+#define X_MAX_PIN           -1
+
+#define Y_STEP_PIN         60
+#define Y_DIR_PIN          61
+#define Y_ENABLE_PIN       38 //56
+#define Y_MIN_PIN          14
+#define Y_MAX_PIN          -1
+
+#define Z_STEP_PIN         46
+#define Z_DIR_PIN          48
+#define Z_ENABLE_PIN       62
+#define Z_MIN_PIN          18
+#define Z_MAX_PIN          -1
+
+#define E_STEP_PIN         26
+#define E_DIR_PIN          28
+#define E_ENABLE_PIN       24
+
+//#define SDPOWER            -1
+//#define SDSS               53
+#define LED_PIN            13
+
+#define FAN_PIN            -1
+
+#define PS_ON_PIN          -1
+#define KILL_PIN           -1
+
+#define HEATER_0_PIN       10
+#define HEATER_1_PIN       8
+#define TEMP_0_PIN          13   // ANALOG NUMBERING
+#define TEMP_1_PIN          14   // ANALOG NUMBERING
+
+#endif
+
 
 
 

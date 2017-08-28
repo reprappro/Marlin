@@ -38,6 +38,26 @@
 void tp_init();  //initialise the heating
 void manage_heater(); //it is critical that this is called periodically.
 
+void max_temp_error(uint8_t extruder);
+void min_temp_error(uint8_t extruder);
+void bed_temp_error();
+
+void setExtruderThermistor(int8_t e, const float& b, const float& r, const float& i);
+void setBedThermistor(const float& b, const float& r, const float& i);
+float getExtruderBeta(int8_t e);
+float getExtruderRs(int8_t e);
+float getExtruderRInf(int8_t e);
+float getBedBeta();
+float getBedRs();
+float getBedRInf();
+void getThermistor(int eb, float &beta, float &resistor, float &thermistor, float &inf);
+void setThermistor(int eb, const float &beta, const float &resistor, const float &thermistor, float &inf);
+
+#ifdef PIDTEMP
+void getPIDValues(int e, float &Kpi, float &Kii, float &Kdi, float &Kmi);
+void setPIDValues(int e, const float &Kpi, const float &Kii, const float &Kdi, const float &Kmi);
+#endif
+
 //low leven conversion routines
 // do not use this routines and variables outsie of temperature.cpp
 int temp2analog(int celsius, uint8_t e);
@@ -47,8 +67,14 @@ float analog2tempBed(int raw);
 extern int target_raw[EXTRUDERS_T];  
 extern int heatingtarget_raw[EXTRUDERS_T];  
 extern int current_raw[EXTRUDERS_T];
+  static int minttemp[EXTRUDERS_T] = { 50 };
+  static int maxttemp[EXTRUDERS_T] = { 16383 }; // the first value used for all
 extern int target_raw_bed;
 extern int current_raw_bed;
+
+extern char dudMinCount;
+extern char dudMaxCount;
+extern char dudBedCount;
 
 extern float Kp,Ki,Kd,Kc;
 extern int Ki_Max;
@@ -74,10 +100,23 @@ FORCE_INLINE void setTargetHotend(const float &celsius, uint8_t extruder)
 {
   if(extruder == 0)
   {  
+    if(dudMinCount < 0 || dudMaxCount < 0)
+    {
+        if(dudMaxCount < 0)
+           max_temp_error(extruder);
+        else
+          min_temp_error(extruder);
+  	target_raw[extruder] = temp2analog(0.0, extruder);
+	#ifdef PIDTEMP
+  		pid_setpoint[extruder] = 0.0;
+	#endif //PIDTEMP
+    } else
+    {
   	target_raw[extruder] = temp2analog(celsius, extruder);
 	#ifdef PIDTEMP
   		pid_setpoint[extruder] = celsius;
-	#endif //PIDTEMP
+	#endif //PIDTEMP      
+    }
   } else
 	slaveSetTargetHotend(celsius, extruder);
 };
@@ -112,8 +151,27 @@ FORCE_INLINE float degHotend(uint8_t extruder) {
   return analog2temp(current_raw[extruder], extruder);
 };
 
-FORCE_INLINE void setTargetHotend(const float &celsius, uint8_t extruder) {  
-  target_raw[extruder] = temp2analog(celsius, extruder);
+FORCE_INLINE void setTargetHotend(const float &celsius, uint8_t extruder) 
+{  
+      if(dudMinCount < 0 || dudMaxCount < 0)
+    {
+        if(dudMaxCount < 0)
+           max_temp_error(extruder);
+        else
+          min_temp_error(extruder);
+  	target_raw[extruder] = temp2analog(0.0, extruder);
+	#ifdef PIDTEMP
+  		pid_setpoint[extruder] = 0.0;
+	#endif //PIDTEMP
+    } else
+    {
+  	target_raw[extruder] = temp2analog(celsius, extruder);
+	#ifdef PIDTEMP
+  		pid_setpoint[extruder] = celsius;
+	#endif //PIDTEMP      
+    }
+  
+  //target_raw[extruder] = temp2analog(celsius, extruder);
 #ifdef PIDTEMP
   pid_setpoint[extruder] = celsius;
 #endif //PIDTEMP
@@ -143,8 +201,12 @@ FORCE_INLINE float degTargetBed() {
 };
 
 FORCE_INLINE void setTargetBed(const float &celsius) {  
-  
-  target_raw_bed = temp2analogBed(celsius);
+  if(dudBedCount < 0)
+  {
+    bed_temp_error();
+    target_raw_bed = temp2analogBed(0.0);
+  } else
+    target_raw_bed = temp2analogBed(celsius);
 };
 
 FORCE_INLINE bool isHeatingBed() {
@@ -155,38 +217,14 @@ FORCE_INLINE bool isCoolingBed() {
   return target_raw_bed < current_raw_bed;
 };
 
-#define degHotend0() degHotend(0)
-#define degTargetHotend0() degTargetHotend(0)
-#define setTargetHotend0(_celsius) setTargetHotend((_celsius), 0)
-#define isHeatingHotend0() isHeatingHotend(0)
-#define isCoolingHotend0() isCoolingHotend(0)
-#if EXTRUDERS_T > 1
-#define degHotend1() degHotend(1)
-#define degTargetHotend1() degTargetHotend(1)
-#define setTargetHotend1(_celsius) setTargetHotend((_celsius), 1)
-#define isHeatingHotend1() isHeatingHotend(1)
-#define isCoolingHotend1() isCoolingHotend(1)
-#else
-#define setTargetHotend1(_celsius) do{}while(0)
-#endif
-#if EXTRUDERS_T > 2
-#define degHotend2() degHotend(2)
-#define degTargetHotend2() degTargetHotend(2)
-#define setTargetHotend2(_celsius) setTargetHotend((_celsius), 2)
-#define isHeatingHotend2() isHeatingHotend(2)
-#define isCoolingHotend2() isCoolingHotend(2)
-#else
-#define setTargetHotend2(_celsius) do{}while(0)
-#endif
-#if EXTRUDERS_T > 3
-#error Invalid number of extruders
-#endif
 
 
 
 int getHeaterPower(int heater);
 void disable_heater();
 void updatePID();
+void max_temp_error(uint8_t e);
+void min_temp_error(uint8_t e);
 
 FORCE_INLINE void autotempShutdown(){
 }

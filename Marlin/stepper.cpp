@@ -83,7 +83,7 @@ volatile char count_direction[NUM_AXIS] = { 1, 1, 1, 1};
 //=============================functions         ============================
 //===========================================================================
 
-#define CHECK_ENDSTOPS  if(check_endstops)
+
 
 // intRes = intIn1 * intIn2 >> 16
 // uses:
@@ -323,7 +323,7 @@ ISR(TIMER1_COMPA_vect)
     if ((out_bits & (1<<X_AXIS)) != 0) {   // -direction
       WRITE(X_DIR_PIN, INVERT_X_DIR);
       count_direction[X_AXIS]=-1;
-      CHECK_ENDSTOPS
+      if(check_endstops)
       {
         #if X_MIN_PIN > -1
           bool x_min_endstop=(READ(X_MIN_PIN) != X_ENDSTOPS_INVERTING);
@@ -339,7 +339,7 @@ ISR(TIMER1_COMPA_vect)
     else { // +direction 
       WRITE(X_DIR_PIN,!INVERT_X_DIR);
       count_direction[X_AXIS]=1;
-      CHECK_ENDSTOPS 
+      if(check_endstops) 
       {
         #if X_MAX_PIN > -1
           bool x_max_endstop=(READ(X_MAX_PIN) != X_ENDSTOPS_INVERTING);
@@ -356,7 +356,7 @@ ISR(TIMER1_COMPA_vect)
     if ((out_bits & (1<<Y_AXIS)) != 0) {   // -direction
       WRITE(Y_DIR_PIN,INVERT_Y_DIR);
       count_direction[Y_AXIS]=-1;
-      CHECK_ENDSTOPS
+      if(check_endstops)
       {
         #if Y_MIN_PIN > -1
           bool y_min_endstop=(READ(Y_MIN_PIN) != Y_ENDSTOPS_INVERTING);
@@ -372,7 +372,7 @@ ISR(TIMER1_COMPA_vect)
     else { // +direction
     WRITE(Y_DIR_PIN,!INVERT_Y_DIR);
       count_direction[Y_AXIS]=1;
-      CHECK_ENDSTOPS
+      if(check_endstops)
       {
         #if Y_MAX_PIN > -1
           bool y_max_endstop=(READ(Y_MAX_PIN) != Y_ENDSTOPS_INVERTING);
@@ -389,7 +389,7 @@ ISR(TIMER1_COMPA_vect)
     if ((out_bits & (1<<Z_AXIS)) != 0) {   // -direction
       WRITE(Z_DIR_PIN,INVERT_Z_DIR);
       count_direction[Z_AXIS]=-1;
-      CHECK_ENDSTOPS
+      if(check_endstops)
       {
         #if Z_MIN_PIN > -1
           bool z_min_endstop=(READ(Z_MIN_PIN) != Z_ENDSTOPS_INVERTING);
@@ -405,7 +405,7 @@ ISR(TIMER1_COMPA_vect)
     else { // +direction
       WRITE(Z_DIR_PIN,!INVERT_Z_DIR);
       count_direction[Z_AXIS]=1;
-      CHECK_ENDSTOPS
+      if(check_endstops)
       {
         #if Z_MAX_PIN > -1
           bool z_max_endstop=(READ(Z_MAX_PIN) != Z_ENDSTOPS_INVERTING);
@@ -627,12 +627,14 @@ void st_init()
   #if E0_DIR_PIN > -1 
     SET_OUTPUT(E0_DIR_PIN);
   #endif
+#ifndef REPRAPPRO_MULTIMATERIALS
   #if defined(E1_DIR_PIN) && (E1_DIR_PIN > -1)
     SET_OUTPUT(E1_DIR_PIN);
   #endif
   #if defined(E2_DIR_PIN) && (E2_DIR_PIN > -1)
     SET_OUTPUT(E2_DIR_PIN);
   #endif
+#endif
 
   //Initialize Enable Pins - steppers default to disabled.
 
@@ -652,6 +654,7 @@ void st_init()
     SET_OUTPUT(E0_ENABLE_PIN);
     if(!E_ENABLE_ON) WRITE(E0_ENABLE_PIN,HIGH);
   #endif
+#ifndef REPRAPPRO_MULTIMATERIALS
   #if defined(E1_ENABLE_PIN) && (E1_ENABLE_PIN > -1)
     SET_OUTPUT(E1_ENABLE_PIN);
     if(!E_ENABLE_ON) WRITE(E1_ENABLE_PIN,HIGH);
@@ -660,6 +663,7 @@ void st_init()
     SET_OUTPUT(E2_ENABLE_PIN);
     if(!E_ENABLE_ON) WRITE(E2_ENABLE_PIN,HIGH);
   #endif
+#endif
 
   //endstops and pullups
   #ifdef ENDSTOPPULLUPS
@@ -733,7 +737,8 @@ void st_init()
     #if E0_ENABLE_PIN > -1
       if(!E_ENABLE_ON) WRITE(E0_ENABLE_PIN,HIGH);
     #endif
-  #endif  
+  #endif
+#ifndef REPRAPPRO_MULTIMATERIALS  
   #if defined(E1_STEP_PIN) && (E1_STEP_PIN > -1) 
     SET_OUTPUT(E1_STEP_PIN);
     #if E1_ENABLE_PIN > -1
@@ -746,6 +751,7 @@ void st_init()
       if(!E_ENABLE_ON) WRITE(E2_ENABLE_PIN,HIGH);
     #endif
   #endif  
+#endif
 
   #ifdef CONTROLLERFAN_PIN
     SET_OUTPUT(CONTROLLERFAN_PIN); //Set pin used for driver cooling fan

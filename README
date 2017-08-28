@@ -2,7 +2,7 @@ This is the RepRapPro version of Marlin.
 
 http://reprappro.com
 
-Modifications mainly be Jean-Marc and Adrian
+Modifications mainly by Jean-Marc and Adrian
 
 The core Marlin code in the Marlin directory is stable and is our standard
 release firmware for all RepRapPro RepRap machines.

@@ -42,6 +42,14 @@ int target_raw_bed = 0;
 int current_raw[EXTRUDERS_T] = { 0 };
 int current_raw_bed = 0;
 
+#ifdef HEATER_0_USES_THERMISTOR
+float eBeta, eRs, eRInf;
+#endif
+
+#ifdef BED_USES_THERMISTOR
+float bBeta, bRs, bRInf;
+#endif
+
 #ifdef PIDTEMP
   // used external
   float pid_setpoint[EXTRUDERS_T] = { 0.0 };
@@ -52,6 +60,11 @@ int current_raw_bed = 0;
   float Kd=DEFAULT_Kd;
   
 #endif //PIDTEMP
+
+void bed_temp_error();
+
+char dudMaxCount, dudMinCount, dudBedCount;
+#define DUD_TEMP_COUNT 3
   
   
 //===========================================================================
@@ -81,8 +94,8 @@ static unsigned long  previous_millis_bed_heater;
 
 
 // Init min and max temp with extreme values to prevent false errors during startup
-  static int minttemp[EXTRUDERS_T] = { 0 };
-  static int maxttemp[EXTRUDERS_T] = { 16383 }; // the first value used for all
+//  static int minttemp[EXTRUDERS_T] = { 0 };
+//  static int maxttemp[EXTRUDERS_T] = { 16383 }; // the first value used for all
   static int bed_minttemp = 0;
   static int bed_maxttemp = 16383;
   
@@ -90,6 +103,94 @@ static unsigned long  previous_millis_bed_heater;
 //===========================================================================
 //=============================   functions      ============================
 //===========================================================================
+
+
+void setExtruderThermistor(int8_t e, const float& b, const float& r, const float& i)
+{
+  #ifdef REPRAPPRO_MULTIMATERIALS
+  if(e > 0)
+  {
+     setSlaveExtruderThermistor(e, b, r, i);
+     return;
+  }
+  #endif
+  eBeta = b;
+  eRs = r;
+  eRInf = i;
+}
+
+void setBedThermistor(const float& b, const float& r, const float& i)
+{
+  bBeta = b;
+  bRs = r;
+  bRInf = i;
+}
+
+float getExtruderBeta(int8_t e)
+{
+  if(e == 0)
+    return eBeta;
+  #ifdef REPRAPPRO_MULTIMATERIALS
+  return getSlaveExtruderBeta(e);
+  #endif
+}
+
+float getExtruderRs(int8_t e)
+{
+  if(e == 0)
+    return eRs;
+  #ifdef REPRAPPRO_MULTIMATERIALS
+  return getSlaveExtruderRs(e);
+  #endif
+}
+
+float getExtruderRInf(int8_t e)
+{
+  if(e == 0)
+    return eRInf;
+  #ifdef REPRAPPRO_MULTIMATERIALS
+  return getSlaveExtruderRInf(e);
+  #endif
+}
+
+float getBedBeta() { return bBeta; }
+float getBedRs() { return bRs; }
+float getBedRInf() { return bRInf; }
+
+void getThermistor(int eb, float &beta, float &resistor, float &thermistor, float &inf)
+{
+  int h = eb;
+  if(!h)
+  {
+   //get BED thermistor
+   beta = getBedBeta();
+   resistor = getBedRs();
+   inf = getBedRInf();
+  } else
+  {
+    // Extruder thermistor
+    h--;
+    beta = getExtruderBeta(h);
+    resistor = getExtruderRs(h);
+    inf = getExtruderRInf(h);         
+  }
+  thermistor = inf/(exp(-beta/298.15));
+}
+
+
+void setThermistor(int eb, const float &beta, const float &resistor, const float &thermistor, float &inf)
+{
+  inf = thermistor*exp(-beta/298.15);
+  int h = eb;
+  if(!h)
+    setBedThermistor(beta, resistor, inf);
+  else
+  {
+    h--;
+    setExtruderThermistor(h, beta, resistor, inf);
+  }
+}
+
 
 void PID_autotune(float temp)
 {
@@ -200,18 +301,73 @@ void updatePID()
   }
 #endif
 }
+
+#ifdef PIDTEMP
+void getPIDValues(int eb, float &Kpi, float &Kii, float &Kdi, float &Kmi)
+{
+  //TODO - also allow Bed PID updating
+  eb--;
+#ifdef REPRAPPRO_MULTIMATERIALS
+  if(eb)
+  {
+    getSlavePIDValues(eb, Kpi, Kii, Kdi, Kmi);
+    return;
+  }
+#endif
+  Kpi = Kp;
+  Kii = Ki/PID_dT;
+  Kdi = Kd*PID_dT;
+  Kmi = Ki_Max;
+}
+
+void setPIDValues(int eb, const float &Kpi, const float &Kii, const float &Kdi, const float &Kmi)
+{
+  //TODO - also allow Bed PID updating
+  eb--;
+#ifdef REPRAPPRO_MULTIMATERIALS
+  if(eb)
+  {
+    setSlavePIDValues(eb, Kpi, Kii, Kdi, Kmi);
+    return;
+  } else
+#endif
+  {
+    Kp = Kpi;
+    Ki = Kii;
+    Kd = Kdi;
+    Ki_Max = constrain(Kmi, 0, 255);  
+    
+    SERIAL_PROTOCOL("ok");
+    SERIAL_PROTOCOL(" p:");
+    SERIAL_PROTOCOL(Kp);
+    SERIAL_PROTOCOL(" i:");
+    SERIAL_PROTOCOL(Ki);
+    Ki = Ki*PID_dT;
+    SERIAL_PROTOCOL(" d:");
+    SERIAL_PROTOCOL(Kd);
+    Kd = Kdi/PID_dT;
+    SERIAL_PROTOCOL(" w:");
+    SERIAL_PROTOCOL(Ki_Max);
+    SERIAL_PROTOCOLLN("");
+    updatePID();
+  }
+}
+
+#endif
   
 int getHeaterPower(int heater) {
   return soft_pwm[heater];
 }
 
+
 void manage_heater()
-{  
+{
+
   float pid_input;
   float pid_output;
 
   if(temp_meas_ready != true)   //better readability
-    return; 
+    return;
 
   CRITICAL_SECTION_START;
   temp_meas_ready = false;
@@ -273,21 +429,81 @@ void manage_heater()
   if(millis() - previous_millis_bed_heater < BED_CHECK_INTERVAL)
     return;
   previous_millis_bed_heater = millis();
+
+  //check master temps for errors here because only done every 5secs
+  // Slave does its own checking
+#ifdef REPRAPPRO_MULTIMATERIALS
+
+    if(dudMaxCount >= 0)
+    {
+      if(degHotend(0) >= HEATER_MAXTEMP)
+      {
+        dudMaxCount++;
+        if(dudMaxCount >= DUD_TEMP_COUNT)
+        {
+          dudMaxCount = -1;
+          setTargetHotend(0,0);
+          max_temp_error(0);
+          //#ifndef BOGUS_TEMPERATURE_FAILSAFE_OVERRIDE
+          //Stop();
+          //#endif
+        }
+      } else
+        dudMaxCount = 0;
+    } else
+      setTargetHotend(0,0);
+
+    if(dudMinCount >= 0)
+    {  
+      if(degHotend(0) <= HEATER_MINTEMP)
+      {
+        dudMinCount++;
+        if(dudMinCount >= DUD_TEMP_COUNT)
+        {
+          dudMinCount = -1;
+          setTargetHotend(0,0);
+          min_temp_error(0);
+          //#ifndef BOGUS_TEMPERATURE_FAILSAFE_OVERRIDE
+          //{
+          //  Stop();
+          //}
+          //#endif
+        }
+      } else
+        dudMinCount = 0;
+    } else
+      setTargetHotend(0,0);
+
+#endif
   
   #if TEMP_BED_PIN > -1
 
       // Check if temperature is within the correct range
-      if((current_raw_bed > bed_minttemp) && (current_raw_bed < bed_maxttemp)) {
-        if(current_raw_bed >= target_raw_bed)
+      if(dudBedCount >= 0)
+      {
+        if((current_raw_bed > bed_minttemp) && (current_raw_bed < bed_maxttemp)) 
         {
-          WRITE(HEATER_BED_PIN,LOW);
-        }
-        else 
+          dudBedCount = 0;
+          if(current_raw_bed >= target_raw_bed)
+          {
+            WRITE(HEATER_BED_PIN,LOW);
+          }
+          else 
+          {
+            WRITE(HEATER_BED_PIN,HIGH);
+          }
+        } else
         {
-          WRITE(HEATER_BED_PIN,HIGH);
+          dudBedCount++;
+          if(dudBedCount >= DUD_TEMP_COUNT)
+          {
+            dudBedCount = -1;
+            bed_temp_error();
+            WRITE(HEATER_BED_PIN,LOW);
+          }
         }
-      }
-      else {
+      } else 
+      {
         WRITE(HEATER_BED_PIN,LOW);
       }
   #endif
@@ -319,7 +535,7 @@ float analog2temp_remote(uint8_t e)
 int temp2analog_remote(int celsius, uint8_t e)
 {
 	// What do we do about this, then?
-	return temp2analogi(celsius, E_BETA, E_RS, E_R_INF);
+	return temp2analogi(celsius, eBeta, eRs, eRInf);
 }
 #endif
 
@@ -329,29 +545,33 @@ int temp2analog(int celsius, uint8_t e)
 #ifdef REPRAPPRO_MULTIMATERIALS
 	if(e > 0) return temp2analog_remote(celsius, e);
 #endif
-	return temp2analogi(celsius, E_BETA, E_RS, E_R_INF); 
+	return temp2analogi(celsius, eBeta, eRs, eRInf); 
 }
 float analog2temp(int raw, uint8_t e) 
 {
 #ifdef REPRAPPRO_MULTIMATERIALS
 	if(e > 0) return analog2temp_remote(e);
 #endif
-	return analog2tempi(raw, E_BETA, E_RS, E_R_INF); 
+	return analog2tempi(raw, eBeta, eRs, eRInf); 
 }
 
 int temp2analogBed(int celsius) 
 {
-	return temp2analogi(celsius, BED_BETA, BED_RS, BED_R_INF); 
+	return temp2analogi(celsius, bBeta, bRs, bRInf); 
 }
 float analog2tempBed(int raw) 
 { 
-	return analog2tempi(raw, BED_BETA, BED_RS, BED_R_INF); 
+	return analog2tempi(raw, bBeta, bRs, bRInf); 
 }
 
 
 
 void tp_init()
 {
+  dudMaxCount = 0;
+  dudMinCount = 0;
+  dudBedCount = 0;
+  
   // Finish init of mult extruder arrays 
   for(int e = 0; e < EXTRUDERS_T; e++) {
     // populate with the first value 
@@ -429,6 +649,9 @@ void tp_init()
   maxttemp[0] = temp2analog(HEATER_0_MAXTEMP, 0);
 #endif //MAXTEMP
 
+#ifdef REPRAPPRO_MULTIMATERIALS
+  // Nothing to do here - remote handles it
+#else
 #if (EXTRUDERS_T > 1) && defined(HEATER_1_MINTEMP)
   minttemp[1] = temp2analog(HEATER_1_MINTEMP, 1);
 #endif // MINTEMP 1
@@ -442,6 +665,7 @@ void tp_init()
 #if (EXTRUDERS_T > 2) && defined(HEATER_2_MAXTEMP)
   maxttemp[2] = temp2analog(HEATER_2_MAXTEMP, 2);
 #endif //MAXTEMP 2
+#endif
 
 #ifdef BED_MINTEMP
   bed_minttemp = temp2analogBed(BED_MINTEMP);
@@ -491,7 +715,7 @@ void disable_heater()
 }
 
 void max_temp_error(uint8_t e) {
-  disable_heater();
+  //disable_heater();
   if(IsStopped() == false) {
     SERIAL_ERROR_START;
     SERIAL_ERRORLN((int)e);
@@ -499,8 +723,17 @@ void max_temp_error(uint8_t e) {
   }
 }
 
+void bed_temp_error() {
+  //disable_heater();
+  if(IsStopped() == false) {
+    SERIAL_ERROR_START;
+    //SERIAL_ERRORLN((int)e);
+    SERIAL_ERRORLNPGM(": Bed switched off. Temp error triggered !");
+  }
+}
+
 void min_temp_error(uint8_t e) {
-  disable_heater();
+  //disable_heater();
   if(IsStopped() == false) {
     SERIAL_ERROR_START;
     SERIAL_ERRORLN((int)e);
@@ -534,19 +767,21 @@ ISR(TIMER0_COMPB_vect)
   static unsigned char soft_pwm_1;
   static unsigned char soft_pwm_2;
   
+  boolean heatOn = ( (dudMinCount >= 0) && (dudMaxCount >= 0) );
+  
   if(pwm_count == 0){
     soft_pwm_0 = soft_pwm[0];
-    if(soft_pwm_0 > 0) WRITE(HEATER_0_PIN,1);
+    if(soft_pwm_0 > 0) WRITE(HEATER_0_PIN,heatOn);
     #ifdef REPRAPPRO_MULTIMATERIALS
         // Nothing to do here - remote handles it
     #else
     #if EXTRUDERS_T > 1
     soft_pwm_1 = soft_pwm[1];
-    if(soft_pwm_1 > 0) WRITE(HEATER_1_PIN,1);
+    if(soft_pwm_1 > 0) WRITE(HEATER_1_PIN,heatOn);
     #endif
     #if EXTRUDERS_T > 2
     soft_pwm_2 = soft_pwm[2];
-    if(soft_pwm_2 > 0) WRITE(HEATER_2_PIN,1);
+    if(soft_pwm_2 > 0) WRITE(HEATER_2_PIN,heatOn);
     #endif
     #endif
   }
@@ -662,8 +897,10 @@ ISR(TIMER0_COMPB_vect)
     #else
       current_raw[0] = 16383 - raw_temp_0_value;
     #endif
-
-#if EXTRUDERS_T > 1    
+#ifdef REPRAPPRO_MULTIMATERIALS
+  // Nothing to do here - remote handles it
+#else
+#if EXTRUDERS_T > 1
     #ifdef HEATER_1_USES_AD595
       current_raw[1] = raw_temp_1_value;
     #else
@@ -678,7 +915,7 @@ ISR(TIMER0_COMPB_vect)
       current_raw[2] = 16383 - raw_temp_2_value;
     #endif
 #endif
-    
+#endif
 
     current_raw_bed = 16383 - raw_temp_bed_value;
 
@@ -689,34 +926,82 @@ ISR(TIMER0_COMPB_vect)
     raw_temp_1_value = 0;
     raw_temp_2_value = 0;
     raw_temp_bed_value = 0;
+    
+    //check_all_temps(); // This checks for above max and below min
 
-    for(unsigned char e = 0; e < EXTRUDERS_T; e++) {
-       if(current_raw[e] >= maxttemp[e]) {
+    for(unsigned char e = 0; e < EXTRUDERS_T; e++)
+    {
+#ifdef REPRAPPRO_MULTIMATERIALS
+        if(e > 0)
+        {
+            //Do nothing
+        }else{
+#endif
+  if(dudMaxCount >= 0)
+  {
+       if(current_raw[e] >= maxttemp[e]) 
+       {
+         dudMaxCount++;
+         if(dudMaxCount > DUD_TEMP_COUNT)
+         {
+          dudMaxCount = -1;
           target_raw[e] = 0;
           max_temp_error(e);
-          #ifndef BOGUS_TEMPERATURE_FAILSAFE_OVERRIDE
-          {
-            Stop();
-          }
-          #endif
-       }
-       if(current_raw[e] <= minttemp[e]) {
+          //#ifndef BOGUS_TEMPERATURE_FAILSAFE_OVERRIDE
+          //{
+          //  Stop();
+          //}
+          //#endif
+         }
+       } else
+         dudMaxCount = 0;
+  } else
+    target_raw[e] = 0;
+       
+  if(dudMinCount >= 0)
+  {
+       if(current_raw[e] <= minttemp[e]) 
+       {
+         dudMinCount++;
+         if(dudMinCount > DUD_TEMP_COUNT)
+         {
           target_raw[e] = 0;
           min_temp_error(e);
-          #ifndef BOGUS_TEMPERATURE_FAILSAFE_OVERRIDE
-          {
-            Stop();
-          }
-          #endif
-       }
+          dudMinCount = -1;
+         // #ifndef BOGUS_TEMPERATURE_FAILSAFE_OVERRIDE
+         // {
+         //  Stop();
+         //}
+         //#endif
+         }
+       } else
+         dudMinCount = 0;
+  } else
+    target_raw[e] = 0;
+    
+#ifdef REPRAPPRO_MULTIMATERIALS
     }
-  
+#endif
+    }
+
+
 #if defined(BED_MAXTEMP) && (HEATER_BED_PIN > -1)
-    if(current_raw_bed >= bed_maxttemp) {
+  if(dudBedCount >= 0)
+  {
+    if(current_raw_bed >= bed_maxttemp) 
+    {
+      dudBedCount++;
+      if(dudBedCount >= DUD_TEMP_COUNT)
+      {
+       dudBedCount = -1;
        target_raw_bed = 0;
-       bed_max_temp_error();
-       Stop();
-    }
+       bed_temp_error();
+       //Stop();
+      }
+    } else
+      dudBedCount = 0;
+  } else
+    target_raw_bed = 0;
 #endif
   }
 }

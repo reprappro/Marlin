@@ -3,7 +3,7 @@
 
 //===========================================================================
 //=============================Thermal Settings  ============================
-//===========================================================================
+//======================================== ===================================
 
 
 #define BED_CHECK_INTERVAL 5000 //ms
@@ -186,5 +186,8 @@ const int dropsegments=5; //everything with less than this number of steps will 
   #undef BED_MAXTEMP
 #endif
 
+#define DEBUG_ECHO (1<<0)
+#define DEBUG_INFO (1<<1)
+#define DEBUG_ERRORS (1<<2)
 
 #endif //__CONFIGURATION_ADV_H
