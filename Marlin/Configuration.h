@@ -10,19 +10,19 @@
 // Uncomment ONE of the next three lines - the one for your RepRap machine
 //#define REPRAPPRO_HUXLEY
 //#define REPRAPPRO_MENDEL //Legacy Mendel
-//#define REPRAPPRO_MENDEL2 //Tricolour
+#define REPRAPPRO_MENDEL2 //Tricolour
 
 // Uncomment ONE of the next three lines - the one for your master controller electronics
 //#define REPRAPPRO_MELZI
-//#define REPRAPPRO_SANGUINOLOLU
+#define REPRAPPRO_SANGUINOLOLU
 //#define REPRAPPRO_DUE
 
 // Uncomment ONE of the next two lines - the one for the series resistors on your controller
-//#define SERIAL_R 4700
+#define SERIAL_R 4700
 //#define SERIAL_R 10000
 
 // Uncomment the next line if your machine has more than one extruder
-//#define REPRAPPRO_MULTIMATERIALS
+#define REPRAPPRO_MULTIMATERIALS
 
 
 
@@ -353,7 +353,7 @@ const bool Z_ENDSTOPS_INVERTING = false; // set to true to invert the logic of t
 #define EEPROM_CHITCHAT
 
 //LCD and SD support
-//#define ULTRA_LCD  //general lcd support, also 16x2
+/#define ULTRA_LCD  //general lcd support, also 16x2
 #define SDSUPPORT // Enable SD Card Support in Hardware Console
 
 //#define ULTIPANEL
